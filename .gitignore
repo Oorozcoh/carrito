@@ -1,0 +1,10 @@
+# Dependencias (Evita subir la carpeta pesada de módulos)
+node_modules/
+
+# Archivos de configuración del sistema o del editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Archivos de entorno (en caso de que uses variables secretas más adelante)
+.env

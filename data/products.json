@@ -1,0 +1,13 @@
+[
+	{
+		"id": "1",
+		"title": "Teclado Mecánico RGB",
+		"description": "Teclado con switches red y retroiluminación",
+		"code": "TEC-001",
+		"price": 4990,
+		"status": true,
+		"stock": 8,
+		"category": "Periféricos",
+		"thumbnails": []
+	}
+]
