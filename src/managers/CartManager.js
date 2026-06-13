@@ -1,4 +1,5 @@
-const fs = require('fs').promises;
+import fs from 'fs';
+const fsPromises = fs.promises;
 
 class CartManager {
     constructor(filePath) {
@@ -7,7 +8,7 @@ class CartManager {
 
     async getCarts() {
         try {
-            const data = await fs.readFile(this.path, 'utf-8');
+            const data = await fsPromises.readFile(this.path, 'utf-8');
             return JSON.parse(data);
         } catch (error) {
             return [];
@@ -24,7 +25,7 @@ class CartManager {
         };
 
         carts.push(newCart);
-        await fs.writeFile(this.path, JSON.stringify(carts, null, '\t'));
+        await fsPromises.writeFile(this.path, JSON.stringify(carts, null, '\t'));
         return newCart;
     }
 
@@ -40,14 +41,14 @@ class CartManager {
         if (cartIndex === -1) return null;
 
         const cart = carts[cartIndex];
-        // Buscamos si el producto ya existe dentro de ese carrito específico
+
         const productIndex = cart.products.findIndex(p => p.product === String(productId));
 
         if (productIndex !== -1) {
-            // Si ya existe, incrementamos la cantidad de uno en uno
+
             cart.products[productIndex].quantity += 1;
         } else {
-            // Si es nuevo, lo agregamos con formato requerido
+
             cart.products.push({
                 product: String(productId),
                 quantity: 1
@@ -55,9 +56,9 @@ class CartManager {
         }
 
         carts[cartIndex] = cart;
-        await fs.writeFile(this.path, JSON.stringify(carts, null, '\t'));
+        await fsPromises.writeFile(this.path, JSON.stringify(carts, null, '\t'));
         return cart;
     }
 }
 
-module.exports = CartManager;
+export default CartManager;

@@ -1,5 +1,5 @@
-const fs = require('fs').promises;
-const path = require('path');
+import fs from 'fs';
+const fsPromises = fs.promises;
 
 class ProductManager {
     constructor(filePath) {
@@ -8,10 +8,10 @@ class ProductManager {
 
     async getProducts() {
         try {
-            const data = await fs.readFile(this.path, 'utf-8');
+            const data = await fsPromises.readFile(this.path, 'utf-8');
             return JSON.parse(data);
         } catch (error) {
-            // Si el archivo no existe, devolvemos un array vacío
+
             return [];
         }
     }
@@ -19,7 +19,7 @@ class ProductManager {
     async addProduct(productData) {
         const products = await this.getProducts();
         
-        // Autogenerar ID (String o Number de forma incremental segura)
+
         const newId = products.length > 0 ? Math.max(...products.map(p => Number(p.id))) + 1 : 1;
 
         const newProduct = {
@@ -35,7 +35,7 @@ class ProductManager {
         };
 
         products.push(newProduct);
-        await fs.writeFile(this.path, JSON.stringify(products, null, '\t'));
+        await fsPromises.writeFile(this.path, JSON.stringify(products, null, '\t'));
         return newProduct;
     }
 
@@ -50,13 +50,11 @@ class ProductManager {
 
         if (index === -1) return null;
 
-        // Extraemos el id para asegurar que NO se actualice ni se elimine
         const { id: _, ...fieldsToUpdate } = updateFields;
 
-        // Combinamos el producto existente con las modificaciones del body
         products[index] = { ...products[index], ...fieldsToUpdate };
 
-        await fs.writeFile(this.path, JSON.stringify(products, null, '\t'));
+        await fsPromises.writeFile(this.path, JSON.stringify(products, null, '\t'));
         return products[index];
     }
 
@@ -67,9 +65,9 @@ class ProductManager {
         if (index === -1) return false;
 
         products.splice(index, 1);
-        await fs.writeFile(this.path, JSON.stringify(products, null, '\t'));
+        await fsPromises.writeFile(this.path, JSON.stringify(products, null, '\t'));
         return true;
     }
 }
 
-module.exports = ProductManager;
+export default ProductManager;

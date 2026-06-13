@@ -9,5 +9,16 @@
 		"stock": 8,
 		"category": "Periféricos",
 		"thumbnails": []
+	},
+	{
+		"id": "2",
+		"title": "Teclado Mecánico",
+		"description": "Teclado RGB con switches red",
+		"code": "TEC-001",
+		"price": 4500,
+		"status": true,
+		"stock": 15,
+		"category": "Accesorios",
+		"thumbnails": []
 	}
 ]

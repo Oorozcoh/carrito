@@ -1,13 +1,11 @@
-const { Router } = require('express');
-const path = require('path');
-const ProductManager = require('../managers/ProductManager');
+import { Router } from 'express';
+import ProductManager from '../managers/ProductManager.js';
 
-const router = Router();
-// Instanciamos indicando la ruta del archivo JSON de respaldo
-const productManager = new ProductManager(path.join(__dirname, '../../data/products.json'));
+const productsRouter = Router();
+const productManager = new ProductManager('./data/products.json');
 
 // GET /api/products/
-router.get('/', async (req, res) => {
+productsRouter.get('/', async (req, res) => {
     try {
         const products = await productManager.getProducts();
         res.json({ status: 'success', payload: products });
@@ -17,7 +15,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/products/:pid
-router.get('/:pid', async (req, res) => {
+productsRouter.get('/:pid', async (req, res) => {
     try {
         const { pid } = req.params;
         const product = await productManager.getProductById(pid);
@@ -30,8 +28,7 @@ router.get('/:pid', async (req, res) => {
 });
 
 // POST /api/products/
-router.get('/', async (req, res) => { /* ... anterior ... */ });
-router.post('/', async (req, res) => {
+productsRouter.post('/', async (req, res) => {
     try {
         const { title, description, code, price, stock, category } = req.body;
         
@@ -48,7 +45,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/products/:pid
-router.put('/:pid', async (req, res) => {
+productsRouter.put('/:pid', async (req, res) => {
     try {
         const { pid } = req.params;
         const updatedProduct = await productManager.updateProduct(pid, req.body);
@@ -62,7 +59,7 @@ router.put('/:pid', async (req, res) => {
 });
 
 // DELETE /api/products/:pid
-router.delete('/:pid', async (req, res) => {
+productsRouter.delete('/:pid', async (req, res) => {
     try {
         const { pid } = req.params;
         const success = await productManager.deleteProduct(pid);
@@ -75,4 +72,4 @@ router.delete('/:pid', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default productsRouter;

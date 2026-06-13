@@ -2,7 +2,7 @@
   "name": "carrito",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/app.js",
 "scripts": {
   "test": "echo \"Error: no test specified\" && exit 1",
   "start": "node src/app.js"
@@ -10,7 +10,7 @@
   "keywords": [],
   "author": "Oscar Orozco",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "express": "^5.2.1"
   }
