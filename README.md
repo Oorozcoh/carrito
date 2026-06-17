@@ -1,5 +1,5 @@
 ### ¿Qué mejoras incluye este nuevo README?
-* **Aclaración de ES6:** El entorno ya opera bajo `"type": "module"`.
+* **Aclaración de ES6:** Se modificó el entorno para que opere bajo `"type": "module"`.
 * **Tablas de Endpoints:** Resume el comportamiento de las rutas y los códigos de respuesta HTTP de éxito y error (`404`, `201`, etc.)
 
 
