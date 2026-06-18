@@ -41,7 +41,7 @@
 | **POST** | `/:cid/product/:pid` | Agrega un producto al carrito. Incrementa de uno en uno la cantidad (`quantity`) si el producto ya existe. | `200 OK` / `404 Not Found` |
 
 ---
-
+```
 ## Estructura del Proyecto
 
 CARRITO
@@ -59,3 +59,4 @@ CARRITO
 ├── .gitignore                 # Archivos ignorados en Git (node_modules)
 ├── package.json               # Configuración y dependencias del proyecto
 └── README.md                  # Documentación del proyecto
+```
