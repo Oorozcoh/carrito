@@ -11,7 +11,6 @@ class ProductManager {
             const data = await fsPromises.readFile(this.path, 'utf-8');
             return JSON.parse(data);
         } catch (error) {
-
             return [];
         }
     }

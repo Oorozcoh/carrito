@@ -1,0 +1,52 @@
+
+<h1>Catálogo de Productos en Tiempo Real (WebSockets)</h1>
+<p>Filtrado dinámico e interactivo.</p>
+<hr>
+
+<div style="margin-bottom: 20px;">
+    <label for="categorySelect" style="font-weight: bold; margin-right: 10px;">Filtrar por Categoría:</label>
+    <select id="categorySelect" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 16px;">
+        <option value="todos">Mostrar Todos</option>
+        <option value="mouse">Mouse</option>
+        <option value="auriculares">Auriculares</option>
+        <option value="streaming">Streaming</option>
+        <option value="monitores">Monitores</option>
+        <option value="Accesorios">Accesorios</option>
+    </select>
+</div>
+
+<div id="productsContainer" class="grid">
+    </div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const container = document.getElementById('productsContainer');
+    const categorySelect = document.getElementById('categorySelect');
+
+    socket.on('updateProducts', (products) => {
+        container.innerHTML = '';
+
+        if (products.length === 0) {
+            container.innerHTML = '<p style="grid-column: 1/-1; color: #666;">No se encontraron productos en esta categoría.</p>';
+            return;
+        }
+
+        products.forEach(prod => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <h3>${prod.title}</h3>
+                <p>${prod.description}</p>
+                <p><strong>Precio:</strong> $${prod.price}</p>
+                <p><small>ID: ${prod.id} | Categoría: <strong>${prod.category}</strong></small></p>
+            `;
+            container.appendChild(card);
+        });
+    });
+
+    categorySelect.addEventListener('change', (e) => {
+        const selectedValue = e.target.value;
+        socket.emit('filterCategory', selectedValue);
+    });
+</script>

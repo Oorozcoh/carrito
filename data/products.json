@@ -1,17 +1,72 @@
 [
 	{
 		"id": "1",
-		"title": "Teclado Mecánico RGB",
-		"description": "Teclado con switches red y retroiluminación",
-		"code": "TEC-001",
-		"price": 4990,
+		"title": "Auriculares Ares H120",
+		"description": "Con su bajo peso y sus generosas almohadillas en las copas y en la vincha, los Ares realmente minimizan el estrés del contacto y resultan muy cómodos, incluso en el uso prolongado.",
+		"code": "AUR-002",
+		"price": 485,
 		"status": true,
 		"stock": 8,
-		"category": "Periféricos",
+		"category": "auriculares",
 		"thumbnails": []
 	},
 	{
 		"id": "2",
+		"title": "Microfono Quasar GM200",
+		"description": "El Quasar constituye el salto de calidad sonoro que necesitas para afrontar el streaming con profesionalismo. Un micrófono de condensador que captura la voz con nitidez excelente sin requerir de tu parte conocimientos técnicos sofisticados en ingeniería de sonido. Simple, práctico, efectivo.",
+		"code": "MIC-001-002",
+		"price": 540,
+		"status": true,
+		"stock": 8,
+		"category": "streaming",
+		"thumbnails": []
+	},
+	{
+		"id": "3",
+		"title": "Webcam Hitman GW800",
+		"description": "Transmite, enseña, entretiene; muéstrate haciendo lo que mejor haces. La Hitman es la herramienta perfecta para ello: una webcam diseñada específicamente para streaming, que se adapta a las necesidades precisas de los nuevos y futuros creadores de contenido del gaming y la tecnología.",
+		"code": "WEB-001",
+		"price": 310,
+		"status": true,
+		"stock": 2,
+		"category": "streaming",
+		"thumbnails": []
+	},
+	{
+		"id": "4",
+		"title": "Mouse King M724",
+		"description": "El K1ng es un ratón híper competitivo que esquiva los ornamentos innecesarios para concentrarse plenamente en el rendimiento.",
+		"code": "MOU-001",
+		"price": 300,
+		"status": true,
+		"stock": 6,
+		"category": "mouse",
+		"thumbnails": []
+	},
+	{
+		"id": "5",
+		"title": "Mouse M601RGB",
+		"description": "Por su muy buen diseño, por su excelente rendimiento, por su prolongada vida útil, el Centrophorus es y seguirá siendo uno de los grandes preferidos del público. Sencillamente, sabes que puedes confiar en él.",
+		"code": "MOU-002",
+		"price": 200,
+		"status": true,
+		"stock": 16,
+		"category": "mouse",
+		"thumbnails": []
+	},
+	{
+		"id": "6",
+		"title": "Auriculares Lamia 2 H320",
+		"description": "Todos los componentes de los Lamia2 están diseñados para durar. La diadema metálica y el brazo flexible del micrófono admiten una enorme amplitud de tensión, el cable resiste miles de flexiones, y la firme armazón de las copas, a prueba de golpes, protege fiablemente los componentes internos. ¡Son muy sólidos!.",
+		"code": "MOU-002",
+		"price": 260,
+		"status": true,
+		"stock": 7,
+		"category": "auriculares",
+		"thumbnails": []
+	},
+	{
+		"id": "7",
 		"title": "Teclado Mecánico",
 		"description": "Teclado RGB con switches red",
 		"code": "TEC-001",

@@ -14,14 +14,22 @@ productsRouter.get('/', async (req, res) => {
     }
 });
 
-// GET /api/products/:pid
-productsRouter.get('/:pid', async (req, res) => {
+// GET /api/products (Listar todo o filtrar por categoría)
+productsRouter.get('/', async (req, res) => {
     try {
-        const { pid } = req.params;
-        const product = await productManager.getProductById(pid);
-        if (!product) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
-        
-        res.json({ status: 'success', payload: product });
+        const products = await productManager.getProducts();
+        const { category } = req.query;
+
+        if (category) {
+            const filteredProducts = products.filter(
+                p => p.category && p.category.toLowerCase() === category.toLowerCase()
+            );
+            
+            return res.json({ status: 'success', payload: filteredProducts });
+        }
+
+        res.json({ status: 'success', payload: products });
+
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
@@ -31,13 +39,15 @@ productsRouter.get('/:pid', async (req, res) => {
 productsRouter.post('/', async (req, res) => {
     try {
         const { title, description, code, price, stock, category } = req.body;
-        
-        // Validación de campos obligatorios
         if (!title || !description || !code || !price || stock === undefined || !category) {
             return res.status(400).json({ status: 'error', message: 'Faltan campos obligatorios' });
         }
 
         const newProduct = await productManager.addProduct(req.body);
+        
+        const products = await productManager.getProducts();
+        req.io.emit('updateProducts', products);
+
         res.status(201).json({ status: 'success', payload: newProduct });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
@@ -50,7 +60,11 @@ productsRouter.put('/:pid', async (req, res) => {
         const { pid } = req.params;
         const updatedProduct = await productManager.updateProduct(pid, req.body);
         
-        if (!updatedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
+
+        if (!updatedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });        
+        
+        const products = await productManager.getProducts();
+        req.io.emit('updateProducts', products);
         
         res.json({ status: 'success', payload: updatedProduct });
     } catch (error) {
@@ -63,10 +77,12 @@ productsRouter.delete('/:pid', async (req, res) => {
     try {
         const { pid } = req.params;
         const success = await productManager.deleteProduct(pid);
-        
         if (!success) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
         
-        res.json({ status: 'success', message: `Producto con ID ${pid} eliminado correctamente` });
+        const products = await productManager.getProducts();
+        req.io.emit('updateProducts', products);
+
+        res.json({ status: 'success', message: `Producto con ID ${pid} eliminado` });
     } catch (error) {
         res.status(500).json({ status: 'error', message: error.message });
     }
