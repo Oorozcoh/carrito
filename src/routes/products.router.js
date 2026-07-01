@@ -45,8 +45,10 @@ productsRouter.post('/', async (req, res) => {
 
         const newProduct = await productManager.addProduct(req.body);
         
-        const products = await productManager.getProducts();
-        req.io.emit('updateProducts', products);
+        const allProducts = await productManager.getProducts();
+        const categories = [...new Set(allProducts.map(p => p.category ? p.category.trim().toLowerCase() : '').filter(c => c !== ''))];
+        
+        req.io.emit('updateProductsAndCategories', { products: allProducts, categories: categories });
 
         res.status(201).json({ status: 'success', payload: newProduct });
     } catch (error) {
@@ -60,11 +62,12 @@ productsRouter.put('/:pid', async (req, res) => {
         const { pid } = req.params;
         const updatedProduct = await productManager.updateProduct(pid, req.body);
         
-
-        if (!updatedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });        
+        if (!updatedProduct) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
         
-        const products = await productManager.getProducts();
-        req.io.emit('updateProducts', products);
+        const allProducts = await productManager.getProducts();
+        const categories = [...new Set(allProducts.map(p => p.category ? p.category.trim().toLowerCase() : '').filter(c => c !== ''))];
+        
+        req.io.emit('updateProductsAndCategories', { products: allProducts, categories: categories });
         
         res.json({ status: 'success', payload: updatedProduct });
     } catch (error) {
@@ -79,8 +82,11 @@ productsRouter.delete('/:pid', async (req, res) => {
         const success = await productManager.deleteProduct(pid);
         if (!success) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
         
-        const products = await productManager.getProducts();
-        req.io.emit('updateProducts', products);
+        // 💡 EMISIÓN COMBINADA EN TIEMPO REAL TRAS ELIMINACIÓN
+        const allProducts = await productManager.getProducts();
+        const categories = [...new Set(allProducts.map(p => p.category ? p.category.trim().toLowerCase() : '').filter(c => c !== ''))];
+        
+        req.io.emit('updateProductsAndCategories', { products: allProducts, categories: categories });
 
         res.json({ status: 'success', message: `Producto con ID ${pid} eliminado` });
     } catch (error) {

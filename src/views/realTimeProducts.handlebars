@@ -1,17 +1,12 @@
 
 <h1>Catálogo de Productos en Tiempo Real (WebSockets)</h1>
-<p>Filtrado dinámico e interactivo.</p>
+<p>Filtrado dinámico e interactivo bidireccional con categorías autogeneradas.</p>
 <hr>
 
 <div style="margin-bottom: 20px;">
     <label for="categorySelect" style="font-weight: bold; margin-right: 10px;">Filtrar por Categoría:</label>
     <select id="categorySelect" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 16px;">
         <option value="todos">Mostrar Todos</option>
-        <option value="mouse">Mouse</option>
-        <option value="auriculares">Auriculares</option>
-        <option value="streaming">Streaming</option>
-        <option value="monitores">Monitores</option>
-        <option value="Accesorios">Accesorios</option>
     </select>
 </div>
 
@@ -24,11 +19,30 @@
     const container = document.getElementById('productsContainer');
     const categorySelect = document.getElementById('categorySelect');
 
-    socket.on('updateProducts', (products) => {
+    socket.on('updateProductsAndCategories', (data) => {
+        const { products, categories } = data;
+
+        const currentSelection = categorySelect.value;
+
+        categorySelect.innerHTML = '<option value="todos">Mostrar Todos</option>';
+
+        categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+            categorySelect.appendChild(option);
+        });
+
+        if (categories.includes(currentSelection)) {
+            categorySelect.value = currentSelection;
+        } else {
+            categorySelect.value = 'todos';
+        }
+
         container.innerHTML = '';
 
         if (products.length === 0) {
-            container.innerHTML = '<p style="grid-column: 1/-1; color: #666;">No se encontraron productos en esta categoría.</p>';
+            container.innerHTML = '<p style="grid-column: 1/-1; color: #666;">No se encontraron productos.</p>';
             return;
         }
 
@@ -45,8 +59,8 @@
         });
     });
 
+    // Detectar cambios en el menú select
     categorySelect.addEventListener('change', (e) => {
-        const selectedValue = e.target.value;
-        socket.emit('filterCategory', selectedValue);
+        socket.emit('filterCategory', e.target.value);
     });
 </script>

@@ -46,24 +46,24 @@ io.on('connection', async (socket) => {
     
     const sendProducts = async (categoryFilter = '') => {
         try {
-            let products = await productManager.getProducts();
-            
+            const allProducts = await productManager.getProducts();
+            const categories = [...new Set(allProducts.map(p => p.category ? p.category.trim().toLowerCase() : '').filter(c => c !== ''))];
+
+            let productsToEmit = allProducts;
             if (categoryFilter && categoryFilter !== 'todos') {
-                products = products.filter(
-                    p => p.category && p.category.toLowerCase() === categoryFilter.toLowerCase()
-                );
+                productsToEmit = allProducts.filter(p => p.category && p.category.toLowerCase() === categoryFilter.toLowerCase());
             }
             
-            socket.emit('updateProducts', products);
+            // 💡 El evento que escucha el script de Handlebars
+            socket.emit('updateProductsAndCategories', { products: productsToEmit, categories: categories });
         } catch (error) {
-            console.error("Error al procesar productos en WS:", error.message);
+            console.error(error.message);
         }
     };
 
     await sendProducts();
 
     socket.on('filterCategory', async (selectedCategory) => {
-        console.log(`Cliente ${socket.id} solicitó filtrar por: ${selectedCategory}`);
         await sendProducts(selectedCategory);
     });
 });
