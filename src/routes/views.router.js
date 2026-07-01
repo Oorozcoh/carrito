@@ -19,4 +19,5 @@ viewsRouter.get('/realtimeproducts', (req, res) => {
     res.render('realTimeProducts', { title: 'Catálogo en Tiempo Real' });
 });
 
+
 export default viewsRouter;

@@ -82,7 +82,6 @@ productsRouter.delete('/:pid', async (req, res) => {
         const success = await productManager.deleteProduct(pid);
         if (!success) return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
         
-        // 💡 EMISIÓN COMBINADA EN TIEMPO REAL TRAS ELIMINACIÓN
         const allProducts = await productManager.getProducts();
         const categories = [...new Set(allProducts.map(p => p.category ? p.category.trim().toLowerCase() : '').filter(c => c !== ''))];
         

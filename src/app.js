@@ -54,7 +54,6 @@ io.on('connection', async (socket) => {
                 productsToEmit = allProducts.filter(p => p.category && p.category.toLowerCase() === categoryFilter.toLowerCase());
             }
             
-            // 💡 El evento que escucha el script de Handlebars
             socket.emit('updateProductsAndCategories', { products: productsToEmit, categories: categories });
         } catch (error) {
             console.error(error.message);
