@@ -1,0 +1,10 @@
+<div style="max-width: 600px; margin: 50px auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0b0b16; border: 2px solid #ff0055; padding: 30px; border-radius: 12px; box-shadow: 0 0 20px rgba(255, 0, 85, 0.4); text-align: center; color: #ffffff;">
+    <h1 style="color: #ff0055; font-family: monospace; font-size: 28px; text-shadow: 0 0 10px #ff0055;">⚠️ OCURRIÓ UN ERROR</h1>
+    <p style="font-size: 16px; color: #cccccc; margin-top: 15px;">{{message}}</p>
+    
+    {{#if error.status}}
+        <p style="font-size: 14px; color: #00ffff; font-family: monospace;">Código de Estado: {{error.status}}</p>
+    {{/if}}
+
+    <a href="/products" style="display: inline-block; margin-top: 25px; padding: 10px 20px; background-color: #00ffff; color: #000; text-decoration: none; font-weight: bold; border-radius: 6px; box-shadow: 0 0 10px #00ffff; font-family: monospace;">VOLVER AL CATÁLOGO</a>
+</div>

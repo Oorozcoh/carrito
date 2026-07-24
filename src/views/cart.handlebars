@@ -1,0 +1,95 @@
+<div style="max-width: 1000px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px;">
+    
+    <!-- Encabezado Cyberpunk -->
+    <h1 style="color: #00ffff; text-shadow: 0 0 10px #00ffff; text-align: center; font-family: monospace; letter-spacing: 2px;">
+        2OH CART // NAVEGACIÓN DE COMPRAS
+    </h1>
+    <p style="color: #ff00ff; text-align: center; margin-bottom: 30px; font-family: monospace;">
+        ID CARRITO: <span id="cart-id-display" style="color: #fff;">{{cart._id}}</span>
+    </p>
+
+    {{#if cart.products.length}}
+        <!-- Tabla Visual Cyberpunk -->
+        <div style="background-color: #0b0b16; border: 2px solid #00ffff; border-radius: 12px; padding: 20px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.2); margin-bottom: 30px;">
+            <table style="width: 100%; border-collapse: collapse; color: #fff; font-family: monospace;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #ff00ff; color: #ff00ff; text-align: left; font-size: 16px;">
+                        <th style="padding: 12px;">PRODUCTO</th>
+                        <th style="padding: 12px; text-align: center;">CANTIDAD</th>
+                        <th style="padding: 12px; text-align: right;">PRECIO UNITARIO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each cart.products}}
+                    <tr style="border-bottom: 1px solid rgba(255, 0, 255, 0.2);">
+                        <td style="padding: 15px 12px; font-size: 15px; color: #00ffff; font-weight: bold;">
+                            {{this.product.title}}
+                        </td>
+                        <td style="padding: 15px 12px; text-align: center; font-size: 16px; color: #39ff14; font-weight: bold;">
+                            {{this.quantity}}
+                        </td>
+                        <td style="padding: 15px 12px; text-align: right; font-size: 16px; color: #fff;">
+                            ${{this.product.price}}
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Panel de Acciones -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #0b0b16; border: 1px solid #ff00ff; padding: 20px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 255, 0.15);">
+            <!-- Botón para Vaciar Carrito -->
+            <button onclick="vaciarCarrito('{{cart._id}}')" style="background-color: transparent; color: #ff0055; border: 2px solid #ff0055; padding: 12px 24px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: monospace; text-transform: uppercase; box-shadow: 0 0 10px rgba(255, 0, 85, 0.4); transition: all 0.3s ease;">
+                🗑️ VACIAR CARRITO
+            </button>
+
+            <!-- Acciones de Navegación -->
+            <a href="/products" style="background-color: #00ffff; color: #000; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px #00ffff; text-transform: uppercase;">
+                « SEGUIR COMPRANDO
+            </a>
+        </div>
+
+    {{else}}
+        <!-- Estado Carrito Vacío -->
+        <div style="background-color: #0b0b16; border: 2px dashed #ff00ff; border-radius: 12px; padding: 50px; text-align: center; box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);">
+            <h2 style="color: #ff00ff; font-family: monospace; margin-bottom: 15px;">EL CARRITO ESTÁ VACÍO</h2>
+            <p style="color: #888; font-family: monospace; margin-bottom: 30px;">No has añadido ningún componente al sistema aún.</p>
+            <a href="/products" style="background-color: #39ff14; color: #000; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px #39ff14; text-transform: uppercase;">
+                IR AL CATÁLOGO 🛒
+            </a>
+        </div>
+    {{/if}}
+
+</div>
+
+<script>
+    /**
+     * Envía una petición DELETE para limpiar todos los productos del carrito
+     */
+    async function vaciarCarrito(cartId) {
+        if (!confirm('¿Estás seguro de que deseas vaciar todos los productos del carrito?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/carts/${cartId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                alert('⚡ Carrito vaciado correctamente.');
+                // Recargamos la vista para reflejar el estado vacío
+                window.location.reload();
+            } else {
+                alert('Error al vaciar el carrito: ' + (result.message || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error de comunicación:', error);
+            alert('Error al conectar con el servidor.');
+        }
+    }
+</script>

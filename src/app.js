@@ -1,30 +1,47 @@
 import express from 'express';
 import { engine } from 'express-handlebars';
+import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import dns from 'dns'; // Importar el módulo DNS nativo de Node.js
 
-import productsRouter from './routes/products.router.js';
-import cartsRouter from './routes/carts.router.js';
-import viewsRouter from './routes/views.router.js';
-import ProductManager from './managers/ProductManager.js';
-
-const app = express();
-const PORT = 8080;
+// Establecer servidores DNS públicos (Google / Cloudflare) para evitar el bloqueo ECONNREFUSED, ya que mi antivirus los bloquea
+dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+import productsRouter from './routes/products.router.js';
+import cartsRouter from './routes/carts.router.js';
+import viewsRouter from './routes/views.router.js';
+import { productModel } from './models/product.model.js';
+
+const app = express();
+const PORT = process.env.PORT || 8080;
+const MONGO_URI = process.env.MONGO_URI;
+
+// Conexión a MongoDB Atlas
+if (!MONGO_URI) {
+    console.error('❌ ERROR: La variable MONGO_URI no está definida en el archivo .env');
+} else {
+    mongoose.connect(MONGO_URI)
+        .then(() => console.log('Conectado exitosamente a MongoDB Atlas (carritoDB) ☁️🍃'))
+        .catch(error => console.error('Error al conectar a MongoDB Atlas:', error.message));
+}
+
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Motor de plantillas Handlebars
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
-
-
-const productManager = new ProductManager('./data/products.json');
 
 const httpServer = app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT} 🚀`);
@@ -37,32 +54,16 @@ app.use((req, res, next) => {
     next();
 });
 
+// Rutas
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/', viewsRouter);
 
-io.on('connection', async (socket) => {
-    console.log('Nuevo cliente conectado vía WebSockets:', socket.id);
-    
-    const sendProducts = async (categoryFilter = '') => {
-        try {
-            const allProducts = await productManager.getProducts();
-            const categories = [...new Set(allProducts.map(p => p.category ? p.category.trim().toLowerCase() : '').filter(c => c !== ''))];
-
-            let productsToEmit = allProducts;
-            if (categoryFilter && categoryFilter !== 'todos') {
-                productsToEmit = allProducts.filter(p => p.category && p.category.toLowerCase() === categoryFilter.toLowerCase());
-            }
-            
-            socket.emit('updateProductsAndCategories', { products: productsToEmit, categories: categories });
-        } catch (error) {
-            console.error(error.message);
-        }
-    };
-
-    await sendProducts();
-
-    socket.on('filterCategory', async (selectedCategory) => {
-        await sendProducts(selectedCategory);
+// Manejo centralizado de errores
+app.use((err, req, res, next) => {
+    console.error('🔥 Error en la aplicación:', err.message);
+    res.status(500).json({
+        status: 'error',
+        message: err.message || 'Error interno del servidor'
     });
 });

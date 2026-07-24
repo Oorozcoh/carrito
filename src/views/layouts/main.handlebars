@@ -3,15 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+    <title>eCommerce Platform - 2OH</title>
     <style>
-        body { font-family: sans-serif; margin: 30px; background-color: #f4f4f4; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #05050d;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #0d0d1a;
+            border-bottom: 2px solid #00ffff;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+        }
+        header a {
+            color: #00ffff;
+            text-decoration: none;
+            font-family: monospace;
+            font-weight: bold;
+            margin-left: 20px;
+        }
+        header a:hover {
+            color: #ff00ff;
+            text-shadow: 0 0 8px #ff00ff;
+        }
+        main {
+            padding: 30px 20px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 0, 255, 0.3);
+            font-size: 12px;
+            color: #888;
+            font-family: monospace;
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
-    {{{body}}}
+
+    <header>
+        <div style="font-family: monospace; font-size: 20px; color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff;">
+            2OH // BACKEND
+        </div>
+        <nav>
+            <a href="/products">CATÁLOGO</a>
+            <a href="/carts/6a615c4a4cdcf9844984ffab">MI CARRITO</a>
+        </nav>
+    </header>
+
+    <main>
+        {{{body}}}
+    </main>
+
+    <footer>
+        <p>© 2026 2OH SYSTEM — Servidor Express & MongoDB Mongoose</p>
+    </footer>
+
 </body>
 </html>
