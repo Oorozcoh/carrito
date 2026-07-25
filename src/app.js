@@ -1,4 +1,5 @@
 import express from 'express';
+import handlebars from 'express-handlebars';
 import { engine } from 'express-handlebars';
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
@@ -30,18 +31,28 @@ if (!MONGO_URI) {
 } else {
     mongoose.connect(MONGO_URI)
         .then(() => console.log('Conectado exitosamente a MongoDB Atlas (carritoDB) ☁️🍃'))
-        .catch(error => console.error('Error al conectar a MongoDB Atlas:', error.message));
-}
+app.engine('handlebars', handlebars.engine({
+    helpers: {
+        // Recibe dos valores y retorna la multiplicación formateada
+        multiply: (a, b) => {
+            const num1 = Number(a) || 0;
+            const num2 = Number(b) || 0;
+            return (num1 * num2).toFixed(2); // Devuelve el subtotal con 2 decimales
+        }
+    }
+}));}
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../public')));
+
+
 
 // Motor de plantillas Handlebars
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
+app.engine('handlebars', handlebars.engine());
 app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'handlebars');
 
 const httpServer = app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT} 🚀`);

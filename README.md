@@ -74,17 +74,50 @@ Clonar el repositorio e instalar dependencias:
 ## Endpoints de la API REST
 ## Productos (/api/products)
     GET /api/products: Listado paginado de productos.
+        Ingrese en Postman o Insomnia y seleccione el método GET o en el navegador a http://localhost:8080/api/products?limit=5&page=1&sort=asc
+        para confirmar la estructura de la respuesta con status: "success" y los enlaces prevLink / nextLink
     GET /api/products/:pid: Consulta de un producto por su ID.
+        Ingrese en Postman o Insomnia y seleccione el método GET o en el navegador a http://localhost:8080/api/products/6a615c4a4cdcf9844984ff9e
+        verá que nos devuelve el detalle del producto con el ID enviado
     POST /api/products: Creación de un nuevo producto.
+        Ingrese en Postman o Insomnia y seleccione el método POST, vaya a http://localhost:8080/api/products y en el body envíele algo como lo siguiente:
+        {
+            "title": "Cámara Web Con Enfoque Automático 4k Para Pc - USB",
+            "description": "Cámara web 4K para PC con sensor, enfoque automático y cancelación de ruido.",
+            "code": "KEY-CYBER-001",
+            "price": 98.50,
+            "stock": 15,
+            "category": "perifericos"
+        }
+        El servidor responderá con el código 201 Created y los datos del producto insertado.
     PUT /api/products/:pid: Actualización de un producto existente.
+        Ingrese en Postman o Insomnia seleccione el método PUT y vaya a /6a615c4a4cdcf9844984ff96 y en el body envíele la siguiente información, luego presione SEND
+        {
+            "price": 120.98,
+            "stock": 20,
+            "title": "Teclado Mecánico RGB Cyber Pro Max"
+        }
+        Deberá recibir un estado 200 OK con la información del producto actualizada reflejada en MongoDB.http://localhost:8080/api/products
     DELETE /api/products/:pid: Eliminación de un producto.
+        Ingrese en Postman o Insomnia, seleccione el método DELETE y vaya a http://localhost:8080/api/products/6a615c4a4cdcf9844984ff9e y presione SEND
+        Si la operación es exitosa, recibirás la respuesta 200 OK con la confirmación y los datos del producto eliminado.
 
 ## Carritos (/api/carts)
     POST /api/carts: Creación de un nuevo carrito.
+        En Insomnia seleccione el método POST e ingresa la URL: http://localhost:8080/api/carts y haga clic en SEND
+        Recibirá un estado 201 Created con un objeto que contendrá su nuevo _id generado
     GET /api/carts/:cid: Consulta de los productos de un carrito.
+        Ingrese a Insomnia, seleccione el método GET y vaya a http://localhost:8080/carts/6a615c4a4cdcf9844984ffab, luego presione SEND
+        Si todo está bien le devolverá el listado de los prductos que hay en el carrito, si no hay productos mostrará una pantalla informando que el carrito está vacío
     POST /api/carts/:cid/products/:pid: Agregar un producto específico al carrito.
+        Vaya a http://localhost:8080/products, haga clic en el botón "AGREGAR AL CARRITO" en culquiera de los productos, si el producto existe en el carrito sumará la cantidad en 1, de lo contrario adicionará el producto al carrito
+        Deberá ver un mensaje diciendo "Producto añadido exitosamente al carrito"
     DELETE /api/carts/:cid/products/:pid: Eliminar un producto específico del carrito.
+        En Insomnia seleccione el método DELETE e ingresa la URL: http://localhost:8080/carts/6a615c4a4cdcf9844984ffa7
+        Deberá devolver un mesaje con código 200 OK "Success" diciendo "Producto eliminado del carrito exitosamente."
     DELETE /api/carts/:cid: Vaciar un carrito completo.
+        Vaya http://localhost:8080/products, haga clic en "MI CARRITO", luego haga clic en el botón "VACIAR CARRITO"
+        Desaparecerán todos los productos y aparecerá un mensaje diciendo que el carrito está vacio
 
 ## Autor
-    Oscar Orozco - Full Stack Web Developer
+    Oscar Orozco - Full Stack Web Developer.
