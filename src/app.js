@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import dns from 'dns'; // Importar el módulo DNS nativo de Node.js
 
-// 1. Configuración de DNS para resolver problemas de conexión local (evitar ECONNREFUSED)
+// 1. Configuración de DNS para resolver problemas de conexión local (evitar ECONNREFUSED), mi antivirus bloquea la conexión.
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 // 2. Configuración de rutas de archivos para módulos ES6
