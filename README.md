@@ -101,6 +101,9 @@ Clonar el repositorio e instalar dependencias:
     DELETE /api/products/:pid: Eliminación de un producto.
         Ingrese en Postman o Insomnia, seleccione el método DELETE y vaya a http://localhost:8080/api/products/6a615c4a4cdcf9844984ff9e y presione SEND
         Si la operación es exitosa, recibirás la respuesta 200 OK con la confirmación y los datos del producto eliminado.
+    DELETE http://localhost:8080/realtimeproducts:  Elimina un producto en tiempo real y se actualizaza la página al instante.
+        Ingrese a http://localhost:8080/realtimeproducts, haga clic en el botón Eliminar de cualquier producto.
+        Se eliminará el producto y la página se actualiza al instante
 
 ## Carritos (/api/carts)
     POST /api/carts: Creación de un nuevo carrito.
@@ -118,9 +121,6 @@ Clonar el repositorio e instalar dependencias:
     DELETE /api/carts/:cid: Vaciar un carrito completo.
         Vaya http://localhost:8080/products, haga clic en "MI CARRITO", luego haga clic en el botón "VACIAR CARRITO"
         Desaparecerán todos los productos y aparecerá un mensaje diciendo que el carrito está vacio
-    DELETE http://localhost:8080/realtimeproducts:  Elimina un producto en tiempo real y se actualizaza la página al instante.
-        Ingrese a http://localhost:8080/realtimeproducts, haga clic en el botón Eliminar de cualquier producto.
-        Se eliminará el producto y la página se actualiza al instante
 
 ## Autor
     Oscar Orozco - Full Stack Web Developer.
