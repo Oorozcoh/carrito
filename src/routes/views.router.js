@@ -111,4 +111,25 @@ viewsRouter.get('/products/:pid', async (req, res) => {
     }
 });
 
+/**
+ * @route   GET /realtimeproducts
+ * @desc    Renderiza la vista en tiempo real respetando el archivo realTimeProducts.handlebars
+ */
+viewsRouter.get('/realtimeproducts', async (req, res) => {
+    try {
+        // Obtener los productos desde MongoDB como objetos planos JS (.lean())
+        const products = await productModel.find().lean();
+
+        // Renderizar la vista realTimeProducts.handlebars
+        res.render('realTimeProducts', {
+            products,
+            style: 'styles.css' // opcional si usas un archivo CSS estático
+        });
+
+    } catch (error) {
+        console.error('Error al cargar la vista en tiempo real:', error);
+        res.status(500).send('Error interno al cargar la página.');
+    }
+});
+
 export default viewsRouter;
