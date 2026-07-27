@@ -1,43 +1,51 @@
-// Inicializamos la conexión WebSocket con el servidor
 const socket = io();
 
-// Función global para solicitar la eliminación de un producto vía WebSockets
-function deleteProduct(productId) {
-    if (confirm('¿Estás seguro de que deseas eliminar este producto en tiempo real?')) {
-        socket.emit('deleteProduct', productId);
-    }
+function eliminarProducto(id) {
+    socket.emit('deleteProduct', id);
 }
 
-// Escuchamos el evento de actualización de lista de productos que envía el servidor
 socket.on('updateProducts', (products) => {
-    const productsContainer = document.getElementById('products-list');
-    
-    // Limpiamos el contenedor actual
-    productsContainer.innerHTML = '';
+    const container = document.getElementById('products-container');
+    container.innerHTML = '';
 
-    if (products.length === 0) {
-        productsContainer.innerHTML = '<p class="neon-text-cyan">No hay productos disponibles en este momento.</p>';
+    if (!products || products.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p class="neon-cyan">No hay productos registrados en tiempo real.</p>
+            </div>
+        `;
         return;
     }
 
-    // Renderizamos los productos recibidos en tiempo real
     products.forEach(prod => {
-        const card = document.createElement('div');
-        card.className = 'cyber-card';
-        card.id = `product-${prod._id}`;
-        card.innerHTML = `
+        const article = document.createElement('article');
+        article.className = 'cyber-card';
+        article.id = `prod-${prod._id}`;
+        article.innerHTML = `
+            <div class="cyber-card-header">
+                <span class="cyber-badge">${prod.category || 'GENERAL'}</span>
+                <h2 class="product-title">${prod.title}</h2>
+            </div>
+            
             <div class="cyber-card-body">
-                <h3 class="product-title">${prod.title}</h3>
-                <p class="product-detail">Categoría: <span class="neon-text-cyan">${prod.category}</span></p>
-                <p class="product-detail">Precio: <span class="neon-text-green">$${prod.price}</span></p>
-                <p class="product-detail">Stock: <span class="neon-text-pink">${prod.stock}</span></p>
+                <p class="product-description">${prod.description || ''}</p>
+                <div class="product-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">Precio</span>
+                        <span class="stat-value neon-green">$${prod.price}</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Stock</span>
+                        <span class="stat-value neon-cyan">${prod.stock} u.</span>
+                    </div>
+                </div>
             </div>
-            <div class="cyber-card-actions">
-                <button class="cyber-btn cyber-btn-danger btn-delete" onclick="deleteProduct('${prod._id}')">
-                    🗑️ ELIMINAR
+
+            <div class="cyber-card-footer">
+                <button class="cyber-btn-delete" onclick="eliminarProducto('${prod._id}')">
+                    <span class="btn-icon">🗑️</span> Eliminar
                 </button>
-            </div>
-        `;
-        productsContainer.appendChild(card);
+            </div>`;
+        container.appendChild(article);
     });
 });

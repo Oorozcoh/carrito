@@ -1,26 +1,47 @@
-<div class="cyber-container">
-    <h2 class="cyber-title">⚡ Productos en Tiempo Real (WebSockets)</h2>
+<div class="cyber-viewport">
+    <header class="cyber-header">
+        <h1 class="cyber-title">PRODUCTOS EN TIEMPO REAL</h1>
+        <p class="cyber-subtitle">Sincronización bidireccional vía WebSockets & Mongoose</p>
+    </header>
 
-    <!-- Contenedor dinámico donde se renderizarán los productos vía Socket.io -->
-    <div id="products-list" class="cyber-cart-list">
+    <!-- Grid principal de productos con efecto glass -->
+    <main id="products-container" class="cyber-grid">
         {{#each products}}
-            <div class="cyber-card" id="product-{{this._id}}">
-                <div class="cyber-card-body">
-                    <h3 class="product-title">{{this.title}}</h3>
-                    <p class="product-detail">Categoría: <span class="neon-text-cyan">{{this.category}}</span></p>
-                    <p class="product-detail">Precio: <span class="neon-text-green">${{this.price}}</span></p>
-                    <p class="product-detail">Stock: <span class="neon-text-pink">{{this.stock}}</span></p>
+            <article class="cyber-card" id="prod-{{this._id}}">
+                <div class="card-glow"></div>
+                <div class="cyber-card-header">
+                    <span class="cyber-badge">{{this.category}}</span>
+                    <h2 class="product-title">{{this.title}}</h2>
                 </div>
-                <div class="cyber-card-actions">
-                    <button class="cyber-btn cyber-btn-danger btn-delete" onclick="deleteProduct('{{this._id}}')">
-                        🗑️ ELIMINAR
+                
+                <div class="cyber-card-body">
+                    <p class="product-description">{{this.description}}</p>
+                    <div class="product-stats">
+                        <div class="stat-box">
+                            <span class="stat-label">Precio</span>
+                            <span class="stat-value neon-green">${{this.price}}</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Stock</span>
+                            <span class="stat-value neon-cyan">{{this.stock}} u.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cyber-card-footer">
+                    <button class="cyber-btn-delete" onclick="eliminarProducto('{{this._id}}')">
+                        <span class="btn-icon">🗑️</span> Eliminar
                     </button>
                 </div>
+            </article>
+        {{else}}
+            <div class="empty-state">
+                <p class="neon-cyan">No hay productos registrados en tiempo real.</p>
             </div>
         {{/each}}
-    </div>
+    </main>
 </div>
 
-<!-- Cliente de Socket.io y script de control -->
+<!-- Scripts de WebSockets -->
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/realtime.js"></script>

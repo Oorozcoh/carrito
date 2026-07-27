@@ -118,6 +118,9 @@ Clonar el repositorio e instalar dependencias:
     DELETE /api/carts/:cid: Vaciar un carrito completo.
         Vaya http://localhost:8080/products, haga clic en "MI CARRITO", luego haga clic en el botón "VACIAR CARRITO"
         Desaparecerán todos los productos y aparecerá un mensaje diciendo que el carrito está vacio
+    DELETE http://localhost:8080/realtimeproducts:  Elimina un producto en tiempo real y se actualizaza la página al instante.
+        Ingrese a http://localhost:8080/realtimeproducts, haga clic en el botón Eliminar de cualquier producto.
+        Se eliminará el producto y la página se actualiza al instante
 
 ## Autor
     Oscar Orozco - Full Stack Web Developer.
