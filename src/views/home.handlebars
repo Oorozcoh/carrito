@@ -1,12 +1,192 @@
-<h1>Catálogo de Productos. (Renderizado de Servidor)</h1>
-<hr>
-<div class="grid">
-    {{#each products}}
-        <div class="card">
-            <h3>{{this.title}}</h3>
-            <p>{{this.description}}</p>
-            <p><strong>Precio:</strong> ${{this.price}}</p>
-            <p><small>Código: {{this.code}}</small></p>
+<!-- src/views/home.handlebars -->
+<style>
+    .ssr-page {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px 60px;
+        font-family: 'Rajdhani', sans-serif;
+    }
+
+    .ssr-terminal {
+        background: rgba(13, 15, 28, 0.9);
+        border: 1px solid rgba(0, 240, 255, 0.35);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
+    }
+
+    .ssr-terminal + .ssr-terminal { margin-top: 30px; }
+
+    .ssr-terminal-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+        background: rgba(0, 240, 255, 0.03);
+    }
+
+    .ssr-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .ssr-dot.r { background: #ff2e63; }
+    .ssr-dot.y { background: #ffcc00; }
+    .ssr-dot.g { background: #39ff14; }
+
+    .ssr-terminal-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        color: #7d8598;
+        letter-spacing: 1.5px;
+        margin-left: 8px;
+    }
+
+    .ssr-log {
+        padding: 18px 22px 20px;
+        font-size: 0.95rem;
+        color: #39ff14;
+        line-height: 1.7;
+    }
+
+    .ssr-log .prompt { color: #00f0ff; }
+
+    .ssr-log .cursor {
+        display: inline-block;
+        width: 8px;
+        height: 15px;
+        background: #39ff14;
+        margin-left: 4px;
+        vertical-align: middle;
+        animation: ssr-blink 1s steps(1) infinite;
+    }
+
+    @keyframes ssr-blink { 50% { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+        .ssr-log .cursor { animation: none; }
+    }
+
+    h1.ssr-heading {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.6rem;
+        color: #ffffff;
+        letter-spacing: 1px;
+        margin: 34px 0 4px;
+        text-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+
+    .ssr-sub {
+        color: #7d8598;
+        margin: 0 0 20px;
+        font-size: 0.95rem;
+    }
+
+    .ssr-row {
+        display: grid;
+        grid-template-columns: 100px 1fr auto auto;
+        gap: 16px;
+        align-items: center;
+        padding: 14px 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        transition: background 0.15s ease;
+    }
+
+    .ssr-row:hover { background: rgba(0, 240, 255, 0.04); }
+
+    .ssr-code {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.7rem;
+        color: #00f0ff;
+        letter-spacing: 1px;
+    }
+
+    .ssr-info .ssr-title { color: #f1f5f9; font-weight: 600; }
+    .ssr-info .ssr-cat { color: #7d8598; font-size: 0.8rem; }
+
+    .ssr-status {
+        font-size: 0.75rem;
+        font-family: 'Orbitron', sans-serif;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+    .ssr-status.in { color: #39ff14; }
+    .ssr-status.out { color: #ff2e63; }
+
+    .ssr-price {
+        font-family: 'Orbitron', sans-serif;
+        color: #ff2e97;
+        font-weight: 700;
+        font-size: 1.05rem;
+        text-align: right;
+    }
+
+    .ssr-empty {
+        padding: 40px 22px;
+        text-align: center;
+        color: #7d8598;
+    }
+
+    .ssr-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 22px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 0.75rem;
+        color: #4b5568;
+    }
+
+    .ssr-cta {
+        color: #00f0ff;
+        text-decoration: none;
+        font-family: 'Orbitron', sans-serif;
+        letter-spacing: 0.5px;
+    }
+    .ssr-cta:hover { text-shadow: 0 0 8px rgba(0, 240, 255, 0.6); }
+
+    @media (max-width: 640px) {
+        .ssr-row { grid-template-columns: 1fr; row-gap: 4px; }
+        .ssr-price { text-align: left; }
+        .ssr-footer { flex-direction: column; gap: 8px; align-items: flex-start; }
+    }
+</style>
+
+<div class="ssr-page">
+
+    <div class="ssr-terminal">
+        <div class="ssr-terminal-head">
+            <span class="ssr-dot r"></span><span class="ssr-dot y"></span><span class="ssr-dot g"></span>
+            <span class="ssr-terminal-title">2OH-STORE // SSR-CONSOLE</span>
         </div>
-    {{/each}}
+        <div class="ssr-log">
+            <span class="prompt">root@2oh-store:~$</span> query --collection products --render ssr<br>
+            &gt; conectado a MongoDB — {{products.length}} unidades recuperadas<span class="cursor"></span>
+        </div>
+    </div>
+
+    <h1 class="ssr-heading">Catálogo de Productos</h1>
+    <p class="ssr-sub">Renderizado en el servidor: esta lista viene directo de la base de datos, sin JavaScript de por medio.</p>
+
+    <div class="ssr-terminal">
+        {{#each products}}
+            <div class="ssr-row">
+                <span class="ssr-code">{{this.code}}</span>
+                <div class="ssr-info">
+                    <div class="ssr-title">{{this.title}}</div>
+                    <div class="ssr-cat">{{this.category}}</div>
+                </div>
+                {{#if this.stock}}
+                    <span class="ssr-status in">● stock {{this.stock}}</span>
+                {{else}}
+                    <span class="ssr-status out">● agotado</span>
+                {{/if}}
+                <span class="ssr-price">${{this.price}}</span>
+            </div>
+        {{else}}
+            <div class="ssr-empty">&gt; 0 resultados — el catálogo está vacío por ahora.</div>
+        {{/each}}
+
+        <div class="ssr-footer">
+            <span>&gt; consulta finalizada — 200 OK</span>
+            <a class="ssr-cta" href="/products">$ cd /products</a>
+        </div>
+    </div>
+
 </div>

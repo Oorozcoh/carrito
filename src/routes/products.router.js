@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { productModel } from '../models/product.model.js';
 import mongoose from 'mongoose';
+import { passportCall, authorization } from '../middlewares/auth.middleware.js';
 
 const productsRouter = Router();
 
@@ -134,7 +135,7 @@ productsRouter.get('/:pid', async (req, res) => {
  * @route   POST /api/products
  * @desc    Crea un nuevo producto en MongoDB
  */
-productsRouter.post('/', async (req, res) => {
+productsRouter.post('/', passportCall('current'), authorization(['admin']), async (req, res) => {
     try {
         const { title, description, code, price, status = true, stock, category, thumbnails = [] } = req.body;
 
@@ -177,7 +178,7 @@ productsRouter.post('/', async (req, res) => {
  * @route   PUT /api/products/:pid
  * @desc    Actualiza los campos de un producto existente por su ID
  */
-productsRouter.put('/:pid', async (req, res) => {
+productsRouter.put('/:pid', passportCall('current'), authorization(['admin']), async (req, res) => {
     try {
         const { pid } = req.params;
         const updateData = req.body;
@@ -234,7 +235,7 @@ productsRouter.put('/:pid', async (req, res) => {
  * @route   DELETE /api/products/:pid
  * @desc    Elimina un producto de la base de datos por su ID
  */
-productsRouter.delete('/:pid', async (req, res) => {
+productsRouter.delete('/:pid', passportCall('current'), authorization(['admin']), async (req, res) => {
     try {
         const { pid } = req.params;
 

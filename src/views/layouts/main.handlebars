@@ -1,23 +1,21 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecommerce App</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 📌 IMPORTANTE: Ruta absoluta iniciando con "/" hacia el CSS -->
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
 
     <header>
-        <div style="font-family: monospace; font-size: 20px; color: #ff00ff; font-weight: bold; text-shadow: 0 0 8px #ff00ff;">
-            2OH // BACKEND
-        </div>
-        <nav>
-            <a href="/products">CATÁLOGO</a>
-            <a href="/carts/6a615c4a4cdcf9844984ffab">MI CARRITO</a>
-        </nav>
+        {{> navbar}}
     </header>
 
     <main>

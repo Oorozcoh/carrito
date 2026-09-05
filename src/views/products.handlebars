@@ -1,3 +1,4 @@
+<!-- src/views/products.handlebars -->
 <div style="max-width: 1200px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px;">
     <h1 style="color: #00ffff; text-shadow: 0 0 10px #00ffff; text-align: center; font-family: monospace;">2OH CATÁLOGO</h1>
     <p style="color: #ff00ff; text-align: center; margin-bottom: 30px;">Explora nuestros componentes disponibles</p>
@@ -13,7 +14,7 @@
                 <p style="font-size: 22px; color: #39ff14; font-weight: bold; margin: 15px 0 0 0; text-shadow: 0 0 5px rgba(57, 255, 20, 0.5);">${{this.price}}</p>
             </div>
             
-            <button onclick="agregarProducto('{{this._id}}')" style="background-color: #39ff14; color: #000; font-weight: bold; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer;">
+            <button class="btn-add-cart" data-id="{{this._id}}" style="background-color: #39ff14; color: #000; font-weight: bold; padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; margin-top: 15px;">
                 AGREGAR AL CARRITO 🛒
             </button>
         </div>
@@ -37,29 +38,50 @@
 </div>
 
 <script>
-    // ID de carrito de prueba existente en la base de datos
-    const CART_ID = "6a615c4a4cdcf9844984ffab";
+    // Obtenemos el ID del carrito dinámicamente desde el objeto de sesión enviado por Handlebars
+    // Si la sesión no tiene carrito, se usa una cadena vacía
+    const USER_CART_ID = "{{user.cart}}";
 
-    async function agregarProducto(productId) {
-        try {
-            const response = await fetch(`/api/carts/${CART_ID}/products/${productId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ quantity: 1 })
-            });
+    document.addEventListener('click', async (event) => {
+        if (event.target && event.target.classList.contains('btn-add-cart')) {
+            const button = event.target;
+            const productId = button.getAttribute('data-id');
+            const originalText = button.innerText;
 
-            const data = await response.json();
-
-            if (response.ok && data.status === 'success') {
-                alert('⚡ Producto añadido exitosamente al carrito.');
-            } else {
-                alert('⚠️ No se pudo agregar: ' + (data.message || 'Error en la petición'));
+            // Validar que exista un ID de carrito antes de realizar la petición
+            if (!USER_CART_ID) {
+                alert('⚠️ No se detectó un carrito asociado a tu usuario. Inicia sesión nuevamente.');
+                return;
             }
-        } catch (error) {
-            console.error('Error al conectar con la API:', error);
-            alert('❌ Error de comunicación con el servidor.');
+
+            button.disabled = true;
+            button.innerText = 'AGREGANDO... ⏳';
+            button.style.opacity = '0.7';
+
+            try {
+                // Realizamos el fetch utilizando el ID dinámico del usuario
+                const response = await fetch(`/api/carts/${USER_CART_ID}/products/${productId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && (data.status === 'success' || response.status === 200)) {
+                    alert('⚡ Producto añadido exitosamente al carrito.');
+                } else {
+                    alert('⚠️ ' + (data.message || data.error || 'No se pudo agregar el producto.'));
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+                alert('❌ Ocurrió un error al conectar con el servidor.');
+            } finally {
+                button.disabled = false;
+                button.innerText = originalText;
+                button.style.opacity = '1';
+            }
         }
-    }
+    });
 </script>

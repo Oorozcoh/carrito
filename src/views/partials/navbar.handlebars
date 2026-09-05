@@ -1,0 +1,52 @@
+{{!-- src/views/partials/navbar.handlebars --}}
+<nav style="background-color: #0b0b16; border-bottom: 2px solid #00ffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); font-family: monospace;">
+    
+    <!-- Sección Izquierda: Marca y Navegación Principal -->
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <a href="/products" style="color: #00ffff; font-size: 20px; font-weight: bold; text-decoration: none; text-shadow: 0 0 8px #00ffff;">
+            ⚡ 2OH STORE
+        </a>
+        <a href="/" style="color: #fff; text-decoration: none; font-size: 14px;">
+            Inicio
+        </a>
+        <a href="/products" style="color: #fff; text-decoration: none; font-size: 14px;">
+            Productos
+        </a>
+    </div>
+
+    <!-- Sección Derecha: Opciones de Usuario y Carrito -->
+    <div style="display: flex; align-items: center; gap: 15px;">
+        {{#if user}}
+            {{!-- Enlaces visibles únicamente cuando hay una sesión activa --}}
+            
+            {{#if user.cart}}
+                <a href="/carts/{{user.cart}}" style="color: #39ff14; text-decoration: none; font-size: 14px; border: 1px solid #39ff14; padding: 6px 12px; border-radius: 4px;">
+                    🛒 Ver Carrito
+                </a>
+            {{/if}}
+
+            <a href="/profile" style="color: #00ffff; text-decoration: none; font-size: 14px; border: 1px solid #00ffff; padding: 6px 12px; border-radius: 4px;">
+                👤 Mi Perfil ({{user.first_name}})
+            </a>
+
+            {{#if isAdmin}}
+                <a href="/admin/products" style="color: #ff00ff; text-decoration: none; font-size: 14px; border: 1px solid #ff00ff; padding: 6px 12px; border-radius: 4px;">
+                    ⚙️ Admin
+                </a>
+            {{/if}}
+
+            <a href="/api/sessions/logout" style="color: #ff4d4d; text-decoration: none; font-weight: bold; font-size: 14px; border: 1px solid #ff4d4d; padding: 6px 12px; border-radius: 4px;">
+                Cerrar Sesión 🚪
+            </a>
+
+        {{else}}
+            {{!-- Enlaces visibles para visitantes no autenticados --}}
+            <a href="/login" style="color: #00ffff; text-decoration: none; font-size: 14px; margin-right: 10px;">
+                Iniciar Sesión
+            </a>
+            <a href="/register" style="background-color: #ff00ff; color: #fff; text-decoration: none; font-size: 14px; padding: 6px 12px; border-radius: 4px; font-weight: bold;">
+                Registrarse
+            </a>
+        {{/if}}
+    </div>
+</nav>

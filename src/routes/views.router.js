@@ -2,6 +2,7 @@ import { Router } from 'express';
 import mongoose from 'mongoose'; // Requerido para validar el formato de ObjectId
 import { productModel } from '../models/product.model.js';
 import { cartModel } from '../models/cart.model.js';
+import { isAuth, isGuest, isAdmin } from '../middlewares/auth.middleware.js';
 
 const viewsRouter = Router();
 
@@ -9,7 +10,7 @@ const viewsRouter = Router();
  * Método GET /products
  * Renderiza el catálogo de productos con paginación
  */
-viewsRouter.get('/products', async (req, res) => {
+viewsRouter.get('/products', isAuth, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 8;
@@ -37,7 +38,7 @@ viewsRouter.get('/products', async (req, res) => {
  * Método GET /carts/:cid
  * Renderiza la vista del carrito validando el ID y precalculando subtotales
  */
-viewsRouter.get('/carts/:cid', async (req, res) => {
+viewsRouter.get('/carts/:cid', isAuth, async (req, res) => {
     try {
         const { cid } = req.params;
 
@@ -86,7 +87,7 @@ viewsRouter.get('/carts/:cid', async (req, res) => {
  * @route   GET /products/:pid
  * @desc    Renderiza la vista de detalle de un producto específico
  */
-viewsRouter.get('/products/:pid', async (req, res) => {
+viewsRouter.get('/products/:pid', isAuth, async (req, res) => {
     try {
         const { pid } = req.params;
 
@@ -115,7 +116,7 @@ viewsRouter.get('/products/:pid', async (req, res) => {
  * @route   GET /realtimeproducts
  * @desc    Renderiza la vista en tiempo real respetando el archivo realTimeProducts.handlebars
  */
-viewsRouter.get('/realtimeproducts', async (req, res) => {
+viewsRouter.get('/realtimeproducts', isAuth, async (req, res) => {
     try {
         // Obtener los productos desde MongoDB como objetos planos JS (.lean())
         const products = await productModel.find().lean();
@@ -129,6 +130,43 @@ viewsRouter.get('/realtimeproducts', async (req, res) => {
     } catch (error) {
         console.error('Error al cargar la vista en tiempo real:', error);
         res.status(500).send('Error interno al cargar la página.');
+    }
+});
+
+// Ruta para renderizar la vista de inicio/home
+viewsRouter.get('/', isAuth, async (req, res) => {
+    try {
+        const products = await productModel.find().lean();
+        res.render('home', { products });
+    } catch (error) {
+        console.error('Error al cargar la vista de inicio:', error);
+        res.status(500).send('Error interno al cargar el inicio.');
+    }
+});
+
+// 📌 Ruta para renderizar el formulario de registro
+viewsRouter.get('/register', isGuest, (req, res) => {
+    // Renderiza el archivo src/views/register.handlebars
+    res.render('register');
+});
+
+viewsRouter.get('/login', isGuest, (req, res) => {
+    res.render('login');
+});
+
+// Perfil del usuario logueado (enlazado desde el navbar)
+viewsRouter.get('/profile', isAuth, (req, res) => {
+    res.render('profile', { user: req.user });
+});
+
+// Panel de administración de productos (solo admin)
+viewsRouter.get('/admin/products', isAuth, isAdmin, async (req, res) => {
+    try {
+        const products = await productModel.find().sort({ title: 1 }).lean();
+        res.render('admin-products', { products });
+    } catch (error) {
+        console.error('Error al cargar el panel de administración:', error);
+        res.status(500).send('Error interno al cargar el panel de administración.');
     }
 });
 

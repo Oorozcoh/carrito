@@ -1,95 +1,120 @@
+// src/app.js
+
+// 1. IMPORTACIÓN DE MÓDULOS
 import express from 'express';
-import handlebars from 'express-handlebars';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
 import mongoose from 'mongoose';
-import { Server } from 'socket.io';
+import { engine } from 'express-handlebars';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import dns from 'dns'; // Importar el módulo DNS nativo de Node.js
+import dns from 'dns';
+import cookieParser from 'cookie-parser';
+import passport from 'passport';
+import initializePassport from './config/passport.config.js';
+import { loadUser } from './middlewares/auth.middleware.js';
 
-// 1. Configuración de DNS para resolver problemas de conexión local (evitar ECONNREFUSED), mi antivirus bloquea la conexión.
-dns.setServers(['8.8.8.8', '1.1.1.1']);
 
-// 2. Configuración de rutas de archivos para módulos ES6
+// 2. CARGA DE VARIABLES DE ENTORNO
+dotenv.config();
+
+// 3. CONFIGURACIÓN DNS DE EMERGENCIA PARA MONGO ATLAS
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
+// 4. IMPORTACIÓN DE RUTAS
+import sessionsRouter from './routes/sessions.router.js';
+import usersRouter from './routes/users.router.js';
+import cartsRouter from './routes/carts.router.js';
+import productsRouter from './routes/products.router.js';
+import viewsRouter from './routes/views.router.js';
+
+// 5. CONFIGURACIÓN DE RUTAS ABSOLUTAS
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-// 3. Importación de enrutadores y modelos
-import productsRouter from './routes/products.router.js';
-import cartsRouter from './routes/carts.router.js';
-import viewsRouter from './routes/views.router.js';
-import { productModel } from './models/product.model.js';
-
 const app = express();
-const PORT = process.env.PORT || 8080;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/coderhouse_db';
 
-// 4. Conexión a MongoDB Atlas
-if (!MONGO_URI) {
-    console.error('❌ ERROR: La variable MONGO_URI no está definida en el archivo .env');
-} else {
-    mongoose.connect(MONGO_URI)
-        .then(() => console.log('Conectado exitosamente a MongoDB Atlas (carritoDB) ☁️🍃'))
-        .catch(error => console.error('Error al conectar a MongoDB Atlas:', error.message));
-}
+// 6. CONEXIÓN A MONGO DB
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('✅ Conectado exitosamente a MongoDB.'))
+    .catch((err) => console.error('❌ Error de conexión a MongoDB:', err.message));
 
-// 5. Middlewares principales
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../public')));
-
-// 6. Configuración del motor de plantillas Handlebars
-app.engine('handlebars', handlebars.engine());
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'handlebars');
-
-// 7. Inicio del servidor HTTP
-const httpServer = app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT} 🚀`);
-});
-
-// 8. Inicialización de WebSockets con Socket.io
-const io = new Server(httpServer);
-
-// Middleware para inyectar io en el objeto req de cada petición HTTP
+// 7. MIDDLEWARE DE CABECERAS Y CONTENT SECURITY POLICY (CSP)
+// Evita el bloqueo de Chrome DevTools y permite la carga de recursos locales
 app.use((req, res, next) => {
-    req.io = io;
+    res.setHeader(
+        "Content-Security-Policy",
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "connect-src 'self' http://localhost:8080 ws://localhost:8080;"
+    );
     next();
 });
 
-// 9. Lógica de comunicación en tiempo real vía WebSockets
-io.on('connection', (socket) => {
-    console.log('⚡ Nuevo cliente conectado a WebSockets');
+// 8. CONFIGURACIÓN DEL MOTOR DE PLANTILLAS (HANDLEBARS)
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
 
-    // Escuchar el evento de eliminación enviado desde realTimeProducts.handlebars
-    socket.on('deleteProduct', async (productId) => {
-        try {
-            // Eliminar producto de la base de datos
-            await productModel.findByIdAndDelete(productId);
+// 9. MIDDLEWARES BASE Y ARCHIVOS ESTÁTICOS
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-            // Consultar la lista actualizada de productos
-            const updatedProducts = await productModel.find().lean();
+// Apunta a la carpeta public en la raíz del proyecto (fuera de src/)
+app.use(express.static(path.join(__dirname, '../public')));
 
-            // Emitir la lista actualizada a todos los clientes conectados
-            io.emit('updateProducts', updatedProducts);
-        } catch (error) {
-            console.error('Error al eliminar producto vía WebSockets:', error.message);
-        }
-    });
+// 9.1 CONFIGURACIÓN DE PASSPORT (estrategias register / login / current)
+initializePassport();
+app.use(passport.initialize());
+app.use(loadUser);
+
+// 10. MIDDLEWARE DE SESIÓN
+app.use(session({
+    store: MongoStore.create({
+        mongoUrl: MONGO_URI,
+        ttl: 3600
+    }),
+    secret: process.env.SESSION_SECRET || 'claveSecreta2OHStore',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60
+    }
+}));
+
+// MIDDLEWARE GLOBAL PARA HACER DISPONIBLE LA SESIÓN EN TODAS LAS VISTAS
+app.use((req, res, next) => {
+    res.setHeader(
+        "Content-Security-Policy",
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "script-src-elem 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "connect-src 'self' http://localhost:8080 ws://localhost:8080; " +
+        "form-action 'self';"
+    );
+    next();
 });
 
-// 10. Registro de rutas de la aplicación
-app.use('/api/products', productsRouter);
-app.use('/api/carts', cartsRouter);
+// 11. ENRUTADORES
 app.use('/', viewsRouter);
+app.use('/api/sessions', sessionsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/carts', cartsRouter);
+app.use('/api/products', productsRouter);
 
-// 11. Manejo centralizado de errores
-app.use((err, req, res, next) => {
-    console.error('🔥 Error en la aplicación:', err.message);
-    res.status(500).json({
-        status: 'error',
-        message: err.message || 'Error interno del servidor'
-    });
+// 12. INICIALIZACIÓN DEL SERVIDOR
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`⚡ Servidor corriendo en http://localhost:${PORT}`);
 });
+
+export default app;
