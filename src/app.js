@@ -1,6 +1,17 @@
 // src/app.js
 
-// 1. IMPORTACIÓN DE MÓDULOS
+// 1. CARGA DE VARIABLES DE ENTORNO — TIENE QUE SER EL PRIMER IMPORT DEL ARCHIVO.
+// En ES Modules, TODOS los `import` de un archivo se ejecutan antes que
+// cualquier otra línea de código, sin importar el orden en que los
+// escribas. 'dotenv/config' es un módulo especial que llama a
+// dotenv.config() como efecto secundario apenas se importa — al ponerlo
+// primero, garantizamos que process.env ya tenga las variables del
+// .env cargadas ANTES de que se evalúen los demás imports (como
+// passport.config.js, que lee process.env.GITHUB_CLIENT_ID al cargarse
+// para decidir qué estrategias registrar).
+import 'dotenv/config';
+
+// 2. IMPORTACIÓN DE MÓDULOS
 import express from 'express';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
@@ -8,16 +19,13 @@ import mongoose from 'mongoose';
 import { engine } from 'express-handlebars';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 import dns from 'dns';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import initializePassport from './config/passport.config.js';
 import { loadUser } from './middlewares/auth.middleware.js';
+import { errorHandler } from './errors/errorHandler.middleware.js';
 
-
-// 2. CARGA DE VARIABLES DE ENTORNO
-dotenv.config();
 
 // 3. CONFIGURACIÓN DNS DE EMERGENCIA PARA MONGO ATLAS
 dns.setServers(['8.8.8.8', '8.8.4.4']);
@@ -110,6 +118,12 @@ app.use('/api/sessions', sessionsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/api/products', productsRouter);
+
+// 11.1 MIDDLEWARE DE ERRORES (SIEMPRE AL FINAL, después de las rutas)
+// Cualquier error lanzado dentro de un controller envuelto en
+// asyncHandler llega acá vía next(error) y se traduce a una respuesta
+// JSON consistente en toda la API (ver src/errors/).
+app.use(errorHandler);
 
 // 12. INICIALIZACIÓN DEL SERVIDOR
 const PORT = process.env.PORT || 8080;

@@ -1,8 +1,14 @@
+// src/routes/views.router.js
+//
+// CONSIGNA - Punto 1 (entrega final): Patrón Repository
+// Las vistas ya consultan a través de productRepository/cartRepository
+// en vez de los modelos de Mongoose directamente.
 import { Router } from 'express';
 import mongoose from 'mongoose'; // Requerido para validar el formato de ObjectId
-import { productModel } from '../models/product.model.js';
-import { cartModel } from '../models/cart.model.js';
+import productRepository from '../repositories/product.repository.js';
+import cartRepository from '../repositories/cart.repository.js';
 import { isAuth, isGuest, isAdmin } from '../middlewares/auth.middleware.js';
+import { oauthProviders } from '../config/passport.config.js';
 
 const viewsRouter = Router();
 
@@ -15,7 +21,7 @@ viewsRouter.get('/products', isAuth, async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 8;
 
-        const result = await productModel.paginate({}, { page, limit, lean: true });
+        const result = await productRepository.getPaginated({}, { page, limit, lean: true });
 
         res.render('products', {
             products: result.docs,
@@ -42,22 +48,16 @@ viewsRouter.get('/carts/:cid', isAuth, async (req, res) => {
     try {
         const { cid } = req.params;
 
-        // 📌 1. Validar si el ID recibido tiene la estructura correcta de MongoDB
         if (!mongoose.Types.ObjectId.isValid(cid)) {
             return res.status(400).send('El ID de carrito proporcionado no tiene un formato válido.');
         }
 
-        // 📌 2. Consultar el carrito en MongoDB con populate
-        const cart = await cartModel
-            .findById(cid)
-            .populate('products.product')
-            .lean();
+        const cart = await cartRepository.getByIdPopulated(cid);
 
         if (!cart) {
             return res.status(404).send('El carrito solicitado no existe en la base de datos.');
         }
 
-        // 📌 3. Filtrar referencias nulas y precalcular subtotales en JS (sin depender de helpers de Handlebars)
         const formattedProducts = (cart.products || [])
             .filter(item => item.product !== null && item.product !== undefined)
             .map(item => {
@@ -65,11 +65,10 @@ viewsRouter.get('/carts/:cid', isAuth, async (req, res) => {
                 const quantity = Number(item.quantity) || 0;
                 return {
                     ...item,
-                    subtotal: (price * quantity).toFixed(2) // Propiedad calculada
+                    subtotal: (price * quantity).toFixed(2)
                 };
             });
 
-        // 📌 4. Renderizar enviando todas las variables requeridas
         res.render('cart', {
             cartId: cart._id.toString(),
             products: formattedProducts,
@@ -91,19 +90,16 @@ viewsRouter.get('/products/:pid', isAuth, async (req, res) => {
     try {
         const { pid } = req.params;
 
-        // Validar formato del ID
         if (!mongoose.Types.ObjectId.isValid(pid)) {
             return res.status(400).send('El ID proporcionado no es válido.');
         }
 
-        // Importante: Usamos .lean() para convertir el documento de Mongoose a objeto JS plano para Handlebars
-        const product = await productModel.findById(pid).lean();
+        const product = await productRepository.getById(pid);
 
         if (!product) {
             return res.status(404).send('El producto solicitado no existe.');
         }
 
-        // Renderizamos la plantilla 'productDetail.handlebars' enviando el objeto
         res.render('productDetail', { product });
 
     } catch (error) {
@@ -118,13 +114,11 @@ viewsRouter.get('/products/:pid', isAuth, async (req, res) => {
  */
 viewsRouter.get('/realtimeproducts', isAuth, async (req, res) => {
     try {
-        // Obtener los productos desde MongoDB como objetos planos JS (.lean())
-        const products = await productModel.find().lean();
+        const products = await productRepository.getPaginated({}, { limit: 1000, lean: true });
 
-        // Renderizar la vista realTimeProducts.handlebars
         res.render('realTimeProducts', {
-            products,
-            style: 'styles.css' // opcional si usas un archivo CSS estático
+            products: products.docs,
+            style: 'styles.css'
         });
 
     } catch (error) {
@@ -136,8 +130,8 @@ viewsRouter.get('/realtimeproducts', isAuth, async (req, res) => {
 // Ruta para renderizar la vista de inicio/home
 viewsRouter.get('/', isAuth, async (req, res) => {
     try {
-        const products = await productModel.find().lean();
-        res.render('home', { products });
+        const result = await productRepository.getPaginated({}, { limit: 1000, lean: true });
+        res.render('home', { products: result.docs });
     } catch (error) {
         console.error('Error al cargar la vista de inicio:', error);
         res.status(500).send('Error interno al cargar el inicio.');
@@ -146,12 +140,26 @@ viewsRouter.get('/', isAuth, async (req, res) => {
 
 // 📌 Ruta para renderizar el formulario de registro
 viewsRouter.get('/register', isGuest, (req, res) => {
-    // Renderiza el archivo src/views/register.handlebars
-    res.render('register');
+    const hasOAuth = oauthProviders.github || oauthProviders.google || oauthProviders.microsoft;
+    res.render('register', { oauthProviders, hasOAuth });
 });
 
 viewsRouter.get('/login', isGuest, (req, res) => {
-    res.render('login');
+    const hasOAuth = oauthProviders.github || oauthProviders.google || oauthProviders.microsoft;
+    res.render('login', { oauthProviders, hasOAuth });
+});
+
+// CONSIGNA (entrega final) - Punto 3: Sistema de Recuperación de Contraseña
+// Formulario para pedir el envío del correo de recuperación
+viewsRouter.get('/forgot-password', isGuest, (req, res) => {
+    res.render('forgot-password');
+});
+
+// Formulario para definir la nueva contraseña, a partir del token que
+// llega por query string desde el enlace del correo
+viewsRouter.get('/reset-password', isGuest, (req, res) => {
+    const { token } = req.query;
+    res.render('reset-password', { token });
 });
 
 // Perfil del usuario logueado (enlazado desde el navbar)
@@ -162,8 +170,8 @@ viewsRouter.get('/profile', isAuth, (req, res) => {
 // Panel de administración de productos (solo admin)
 viewsRouter.get('/admin/products', isAuth, isAdmin, async (req, res) => {
     try {
-        const products = await productModel.find().sort({ title: 1 }).lean();
-        res.render('admin-products', { products });
+        const result = await productRepository.getPaginated({}, { limit: 1000, sort: { title: 1 }, lean: true });
+        res.render('admin-products', { products: result.docs });
     } catch (error) {
         console.error('Error al cargar el panel de administración:', error);
         res.status(500).send('Error interno al cargar el panel de administración.');

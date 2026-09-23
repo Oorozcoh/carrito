@@ -38,16 +38,26 @@
         </div>
 
         <!-- Panel de Acciones -->
-        <div style="display: flex; justify-content: space-between; align-items: center; background-color: #0b0b16; border: 1px solid #ff00ff; padding: 20px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 255, 0.15);">
+        <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center; background-color: #0b0b16; border: 1px solid #ff00ff; padding: 20px; border-radius: 12px; box-shadow: 0 0 15px rgba(255, 0, 255, 0.15);">
             <!-- Botón para Vaciar Carrito -->
             <button onclick="vaciarCarrito('{{cart._id}}')" style="background-color: transparent; color: #ff0055; border: 2px solid #ff0055; padding: 12px 24px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: monospace; text-transform: uppercase; box-shadow: 0 0 10px rgba(255, 0, 85, 0.4); transition: all 0.3s ease;">
                 🗑️ VACIAR CARRITO
             </button>
 
-            <!-- Acciones de Navegación -->
-            <a href="/products" style="background-color: #00ffff; color: #000; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-family: monospace; box-shadow: 0 0 10px #00ffff; text-transform: uppercase;">
-                « SEGUIR COMPRANDO
-            </a>
+            <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                <!-- Acciones de Navegación -->
+                <a href="/products" style="background-color: transparent; color: #00ffff; border: 2px solid #00ffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-family: monospace; text-transform: uppercase;">
+                    « SEGUIR COMPRANDO
+                </a>
+
+                {{#unless isAdmin}}
+                    <!-- CONSIGNA - Punto 6: Finalizar compra. Solo un role
+                         'user' puede comprar (un admin no ve este botón). -->
+                    <button onclick="finalizarCompra('{{cart._id}}')" style="background-color: #39ff14; color: #000; border: none; padding: 12px 24px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: monospace; text-transform: uppercase; box-shadow: 0 0 10px #39ff14;">
+                        💳 FINALIZAR COMPRA
+                    </button>
+                {{/unless}}
+            </div>
         </div>
 
     {{else}}
@@ -90,6 +100,43 @@
         } catch (error) {
             console.error('Error de comunicación:', error);
             alert('Error al conectar con el servidor.');
+        }
+    }
+    /**
+     * CONSIGNA - Punto 6: Finaliza la compra del carrito. Informa si fue
+     * una compra completa o parcial (productos sin stock quedan en el carrito).
+     */
+    async function finalizarCompra(cartId) {
+        if (!confirm('¿Confirmás la compra de los productos en tu carrito?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/carts/${cartId}/purchase`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                const ticket = result.payload.ticket;
+                const failed = result.payload.failedProducts || [];
+
+                let mensaje = `✅ Compra registrada.\nTicket: ${ticket.code}\nMonto: $${ticket.amount.toFixed(2)}`;
+                if (failed.length > 0) {
+                    mensaje += `\n\n⚠️ ${failed.length} producto(s) no tenían stock suficiente y quedaron en tu carrito.`;
+                }
+
+                alert(mensaje);
+            } else {
+                alert('No se pudo completar la compra: ' + (result.message || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('Error de comunicación:', error);
+            alert('Error al conectar con el servidor.');
+        } finally {
+            window.location.reload();
         }
     }
 </script>

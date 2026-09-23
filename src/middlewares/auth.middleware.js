@@ -1,8 +1,22 @@
 // src/middlewares/auth.middleware.js
+//
+// CONSIGNA (entrega final) - Punto 4: Middleware de Autorización
+// authorization() e isCartOwner() son los middlewares que, combinados
+// con passportCall('current'), delimitan el acceso por rol:
+//   - authorization(['admin'])  -> solo admin puede crear/actualizar/
+//                                  eliminar productos (products.router.js)
+//   - authorization(['user'])   -> solo un usuario (no admin) puede
+//                                  agregar productos a SU carrito y
+//                                  finalizar la compra (carts.router.js)
+//   - isCartOwner                -> además de lo anterior, ese carrito
+//                                  tiene que ser el suyo (o ser admin,
+//                                  para las operaciones que sí puede
+//                                  hacer un admin, como ver cualquier
+//                                  carrito)
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET, cookieExtractor } from '../utils.js';
-import { userModel } from '../models/user.model.js';
+import { JWT_SECRET, cookieExtractor } from '../utils/jwt.util.js';
+import userRepository from '../repositories/user.repository.js';
 
 /**
  * Middleware GLOBAL (no bloquea). Si hay una cookie JWT válida, resuelve
@@ -16,9 +30,10 @@ export const loadUser = async (req, res, next) => {
         if (!token) return next();
 
         const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await userModel.findById(decoded.user._id ?? decoded.user.id).lean();
+        const userDoc = await userRepository.getById(decoded.user._id ?? decoded.user.id);
 
-        if (user) {
+        if (userDoc) {
+            const user = userDoc.toObject();
             delete user.password;
             req.user = user;
             res.locals.user = user;
@@ -78,7 +93,10 @@ export const passportCall = (strategy) => {
                 return res.status(500).json({ status: 'error', message: 'Error interno de autenticación.' });
             }
             if (!user) {
-                // Token inválido, inexistente o expirado -> error apropiado de Passport
+                // CONSIGNA - Punto 5: "en caso de token inválido o inexistente,
+                // se devuelve un error apropiado de Passport" — info.message
+                // viene directamente del done(null, false, { message }) de
+                // cada estrategia (ver passport.config.js).
                 return res.status(401).json({
                     status: 'error',
                     message: info?.message ?? 'No autorizado: token inválido o inexistente.'
